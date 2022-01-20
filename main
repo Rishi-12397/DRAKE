@@ -1,0 +1,57 @@
+import discord
+from discord.ext import commands
+import replit
+import os
+from datetime import datetime
+from essentials.keep_alive import keep_alive as keep_alive
+
+client = commands.Bot(command_prefix='-', intents=discord.Intents.all(), description='A bot used for SP1KE and DRags Server', owner_id=852800494791294976, case_insensitive=True, status=discord.Status.dnd, activity=discord.Activity(type=discord.ActivityType.watching, name="SP1KE and DRags"))
+                   
+def getTime():
+  timeFormat = "%d-%m-%Y %H:%M:%S %Z%z"
+  time1 = datetime.now()
+  time2 = time1.strftime(timeFormat)
+  return time2
+
+def loadCogs():
+  cogList = ['youtube', 'logging']
+  for cog in cogList:
+    try:
+      client.load_extension(f"cogs.{cog}")
+      print(f"Loaded {cog} Sucessfully.")
+    except:
+      print(f"Loaded {cog} Unsucessfully!")
+  return
+
+def writeLoadFile():
+  with open("data/bot_loads.txt", "a+") as file_object:
+    file_object.write(f"Loaded at - {getTime()}\n")
+      
+@client.event
+async def on_ready():
+  replit.clear()
+  print(f'Logged in as {client.user} Sucessfully.')
+  loadCogs()
+  writeLoadFile()
+
+@client.command()
+@commands.is_owner()
+async def send(ctx, chan, *, message):
+  await ctx.message.delete()
+  try:
+    channel = client.get_channel(int(chan))
+    await channel.send(message)
+  except:
+    print("Invalid Channel")
+  
+@client.command()
+@commands.is_owner()
+async def guild_invites(ctx):
+  for guild in client.guilds:
+        channel = guild.text_channels[0]
+        invite = await channel.create_invite(max_uses=100, max_age=300)
+        user = client.get_user(852800494791294976)
+        await user.send(invite.url)
+  
+keep_alive()
+client.run(os.environ['DR1KE_Token'])
